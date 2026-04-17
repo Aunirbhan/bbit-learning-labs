@@ -14,18 +14,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+#!/usr/bin/env python
+
 import os
 import sys
-import pika
-from producer_interface import mqProducerInterface
-
-# Update the import to match the producer class file you created if it's different then the default
 from solution.producer_sol import mqProducer  # pylint: disable=import-error
 
 
 def main() -> None:
-    producer = mqProducer(routing_key="Tech Lab Key",exchange_name="Tech Lab Exchange")
-    producer.publishOrder("Success! Producer And Consumer Section Complete.")
+    if len(sys.argv) != 4:
+        print("Usage: python publish.py <ticker> <price> <sector>")
+        sys.exit(1)
+
+    ticker = sys.argv[1]
+    price = sys.argv[2]
+    sector = sys.argv[3]
+
+    exchange_name = "stocks_topic_exchange"
+    routing_key = f"stock.{sector}.{ticker}"
+    message = f"{ticker} is ${price}"
+
+    producer = mqProducer(
+        routing_key=routing_key,
+        exchange_name=exchange_name,
+    )
+    producer.publishOrder(message)
 
 
 if __name__ == "__main__":

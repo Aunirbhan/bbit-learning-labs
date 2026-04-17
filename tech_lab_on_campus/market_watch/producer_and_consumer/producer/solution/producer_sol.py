@@ -1,6 +1,4 @@
-
 import os
-
 import pika
 from producer_interface import mqProducerInterface
 
@@ -14,10 +12,12 @@ class mqProducer(mqProducerInterface):
     def setupRMQConnection(self) -> None:
         con_params = pika.URLParameters(os.environ["AMQP_URL"])
         self.m_connection = pika.BlockingConnection(parameters=con_params)
-
         self.m_channel = self.m_connection.channel()
 
-        self.m_channel.exchange_declare(self.m_exchange_name)
+        self.m_channel.exchange_declare(
+            exchange=self.m_exchange_name,
+            exchange_type="topic",
+        )
 
     def publishOrder(self, message: str) -> None:
         self.m_channel.basic_publish(
@@ -25,10 +25,9 @@ class mqProducer(mqProducerInterface):
             routing_key=self.m_routing_key,
             body=message,
         )
-
         print("Sent Order")
 
     def __del__(self) -> None:
-        print(f"close connection on destruction")
+        print("close connection on destruction")
         self.m_channel.close()
         self.m_connection.close()
